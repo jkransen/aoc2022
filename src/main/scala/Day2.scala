@@ -19,45 +19,32 @@ object Day2 extends App {
     override val points = 3
   }
 
-  sealed trait Whose
-  case class Ours(hand: HandShape) extends Whose
-  case class Theirs(hand: HandShape) extends Whose
-  case object None extends Whose
-
-  def charToHand(char: Char): Whose = {
-    char match {
-      case 'A' => Theirs(Rock)
-      case 'B' => Theirs(Paper)
-      case 'C' => Theirs(Scissors)
-      case 'X' => Ours(Rock)
-      case 'Y' => Ours(Paper)
-      case 'Z' => Ours(Scissors)
-      case _   => None
+  case class Round(theirs: HandShape, ours: HandShape) {
+    private val outcome = if (theirs.defeats == ours) {
+      0
+    } else if (ours.defeats == theirs) {
+      6
+    } else {
+      3
     }
+    val score: Int = ours.points + outcome
   }
 
-  case class Round(theirs: Theirs, ours: Ours) {
-    val score: Int = {
-      val outcome = if (theirs.hand.defeats == ours.hand) {
-        0
-      } else if (ours.hand.defeats == theirs.hand) {
-        6
-      } else {
-        3
-      }
-      ours.hand.points + outcome
-    }
+  def charToTheirHand(char: Char): HandShape = char match {
+    case 'A' => Rock
+    case 'B' => Paper
+    case 'C' => Scissors
+  }
+
+  def charToOurHand(char: Char): HandShape = char match {
+    case 'X' => Rock
+    case 'Y' => Paper
+    case 'Z' => Scissors
   }
 
   def lineToRound(line: String): Round = {
-    val theirs = line.map(charToHand)
-      .filter(p => p.isInstanceOf[Theirs])
-      .map(p => p.asInstanceOf[Theirs])
-      .head
-    val ours = line.map(charToHand)
-      .filter(p => p.isInstanceOf[Ours])
-      .map(p => p.asInstanceOf[Ours])
-      .head
+    val theirs = charToTheirHand(line(0))
+    val ours = charToOurHand(line(2))
     Round(theirs, ours)
   }
 
@@ -66,18 +53,18 @@ object Day2 extends App {
   val totalScore = rounds.map(_.score).sum
 
   println("1. Total score: " + totalScore)
+  assert(totalScore == 14069)
 
   // can't iterate over sealed trait values :-(
   val handshapes = Set(Rock, Paper, Scissors)
 
   def lineToRound2(line: String): Round = {
-    val theirs = charToHand(line.head).asInstanceOf[Theirs]
-    val ourHand: HandShape = line(2) match {
-      case 'X' => theirs.hand.defeats
-      case 'Y' => theirs.hand
-      case 'Z' => (handshapes - theirs.hand - theirs.hand.defeats).head
+    val theirs = charToTheirHand(line(0))
+    val ours: HandShape = line(2) match {
+      case 'X' => theirs.defeats
+      case 'Y' => theirs
+      case 'Z' => (handshapes - theirs - theirs.defeats).head
     }
-    val ours = Ours(ourHand)
     Round(theirs, ours)
   }
 
@@ -86,4 +73,5 @@ object Day2 extends App {
   val totalScore2 = rounds2.map(_.score).sum
 
   println("2. Total score: " + totalScore2)
+  assert(totalScore2 == 12411)
 }

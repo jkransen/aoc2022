@@ -9,19 +9,19 @@ object Day5 extends App {
   val moveRegex = "move (\\d+) from (\\d+) to (\\d+)".r.pattern
 
   val lines = Source.fromResource("day5_1").getLines().toList
-  val moves = parseMoves(lines, List())
-  val rows = parseRows(lines, List())
-  val stacks = rotate(rows, List())
+  val moves = parseMoves(lines)
+  val rows = parseRows(lines)
+  val stacks = rotate(rows)
 
-  val afterMoves = makeMoves(stacks, moves, crateMover9000)
-  val onTop = afterMoves.flatMap(_.headOption)
+  val stackAfterMoves = makeMoves(stacks, moves, crateMover9000)
+  val cratesOnTop = stackAfterMoves.flatMap(_.headOption)
   print("1. CrateMover 9000: ")
-  onTop.foreach(print)
+  cratesOnTop.foreach(print)
 
-  val afterMoves2 = makeMoves(stacks, moves, crateMover9001)
-  val onTop2 = afterMoves2.flatMap(_.headOption)
+  val stackAfterMoves2 = makeMoves(stacks, moves, crateMover9001)
+  val cratesOnTop2 = stackAfterMoves2.flatMap(_.headOption)
   print("\n2. CrateMover 9001: ")
-  onTop2.foreach(print)
+  cratesOnTop2.foreach(print)
 
   @tailrec
   def makeMoves(stacks: List[List[Char]], moves: List[Move], moveOperation: (List[List[Char]], Move) => List[List[Char]]): List[List[Char]] = {
@@ -53,7 +53,7 @@ object Day5 extends App {
   }
 
   @tailrec
-  def rotate(stack: List[List[Char]], aggregate: List[List[Char]]): List[List[Char]] = {
+  def rotate(stack: List[List[Char]], aggregate: List[List[Char]] = List()): List[List[Char]] = {
     if (stack.isEmpty) {
       aggregate
     } else {
@@ -67,7 +67,7 @@ object Day5 extends App {
   }
 
   @tailrec
-  def parseMoves(input: List[String], moves: List[Move]): List[Move] = {
+  def parseMoves(input: List[String], moves: List[Move] = List()): List[Move] = {
     if (input.isEmpty) {
       moves
     } else {
@@ -88,7 +88,7 @@ object Day5 extends App {
   }
 
   @tailrec
-  def parseRows(input: List[String], stack: List[List[Char]]): List[List[Char]] = {
+  def parseRows(input: List[String], stack: List[List[Char]] = List()): List[List[Char]] = {
     val line = input.head
     if (bottomRegex.matcher(line).matches()) {
       stack

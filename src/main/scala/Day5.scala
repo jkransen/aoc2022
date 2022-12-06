@@ -23,13 +23,13 @@ object Day5 extends App {
   println(s"2. CrateMover 9001: $cratesOnTop2")
 
   @tailrec
-  def makeMoves(stacks: List[Stack], moves: List[Move], moveOperation: (List[Stack], Move) => List[Stack]): List[Stack] = {
+  def makeMoves(stacks: List[Stack], moves: List[Move], crateMover: (List[Stack], Move) => List[Stack]): List[Stack] = {
     if (moves.isEmpty) {
       stacks
     } else {
       val nextMove = moves.head
-      val updatedStacks = moveOperation(stacks, nextMove)
-      makeMoves(updatedStacks, moves.tail, moveOperation)
+      val updatedStacks = crateMover(stacks, nextMove)
+      makeMoves(updatedStacks, moves.tail, crateMover)
     }
   }
 
@@ -39,7 +39,7 @@ object Day5 extends App {
       stacks
     } else {
       val updated = stacks
-        .updated(move.to, List(stacks(move.from).head) ++ stacks(move.to))
+        .updated(move.to, stacks(move.from).head :: stacks(move.to))
         .updated(move.from, stacks(move.from).tail)
       crateMover9000(updated, move.copy(amount = move.amount - 1))
     }
@@ -52,26 +52,26 @@ object Day5 extends App {
   }
 
   @tailrec
-  def rotate(rows: List[List[Char]], rotated: List[Stack] = List()): List[Stack] = {
+  def rotate(rows: List[List[Char]], rotated: List[Stack] = Nil): List[Stack] = {
     if (rows.isEmpty) {
       rotated
     } else {
       val topRow = rows.head
-      val newRotated = topRow.zipAll(rotated, List(), List()).map {
-        case (' ', a) => a
-        case (n: Char, a) => List(n) ++ a
+      val newRotated = topRow.zipAll(rotated, Nil, Nil).map {
+        case (' ', list) => list
+        case (c: Char, list) => c :: list
       }
       rotate(rows.tail, newRotated)
     }
   }
 
   @tailrec
-  def parseMoves(input: List[String], moves: List[Move] = List()): List[Move] = {
+  def parseMoves(input: List[String], moves: List[Move] = Nil): List[Move] = {
     if (input.isEmpty) {
       moves
     } else {
       parseMove(input.head) match {
-        case Some(move) => parseMoves(input.tail, moves ++ List(move))
+        case Some(move) => parseMoves(input.tail, moves :+ move)
         case None => parseMoves(input.tail, moves)
       }
     }
@@ -87,7 +87,7 @@ object Day5 extends App {
   }
 
   @tailrec
-  def parseRows(input: List[String], stack: List[Stack] = List()): List[Stack] = {
+  def parseRows(input: List[String], stack: List[Stack] = Nil): List[Stack] = {
     val line = input.head
     if (bottomRegex.matcher(line).matches()) {
       stack
@@ -96,7 +96,7 @@ object Day5 extends App {
         i <- 1.to((line.length + 1) / 4)
       } yield line(4 * (i - 1) + 1)
 
-      parseRows(input.tail, List(row.toList) ++ stack)
+      parseRows(input.tail, row.toList :: stack)
     }
   }
 

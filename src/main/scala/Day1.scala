@@ -8,13 +8,13 @@ object Day1 extends App {
   val lines: List[String] = Source.fromResource("day1_1").getLines().toList
 
   @tailrec
-  def groupSum(input: List[String], currentElf: Int = 0, aggregate: List[Int] = List()): List[Int] = {
+  def groupSum(input: List[String], currentElf: Int = 0, aggregate: List[Int] = Nil): List[Int] = {
     if (input.isEmpty) {
       aggregate
     } else {
       Try(parseInt(input.head)).toOption match {
         case Some(value) => groupSum(input.tail, currentElf + value, aggregate)
-        case None => groupSum(input.tail, 0, aggregate ++ List(currentElf))
+        case None => groupSum(input.tail, 0, aggregate :+ currentElf)
       }
     }
   }

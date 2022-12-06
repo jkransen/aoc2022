@@ -4,6 +4,7 @@ import scala.io.Source
 object Day5 extends App {
 
   case class Move(amount: Int, from: Int, to: Int)
+  type Stack = List[Char]
 
   val bottomRegex = "^[\\d\\s]+$".r.pattern
   val moveRegex = "move (\\d+) from (\\d+) to (\\d+)".r.pattern
@@ -22,7 +23,7 @@ object Day5 extends App {
   println(s"2. CrateMover 9001: $cratesOnTop2")
 
   @tailrec
-  def makeMoves(stacks: List[List[Char]], moves: List[Move], moveOperation: (List[List[Char]], Move) => List[List[Char]]): List[List[Char]] = {
+  def makeMoves(stacks: List[Stack], moves: List[Move], moveOperation: (List[Stack], Move) => List[Stack]): List[Stack] = {
     if (moves.isEmpty) {
       stacks
     } else {
@@ -33,7 +34,7 @@ object Day5 extends App {
   }
 
   @tailrec
-  def crateMover9000(stacks: List[List[Char]], move: Move): List[List[Char]] = {
+  def crateMover9000(stacks: List[Stack], move: Move): List[Stack] = {
     if (move.amount == 0) {
       stacks
     } else {
@@ -44,23 +45,23 @@ object Day5 extends App {
     }
   }
 
-  def crateMover9001(stacks: List[List[Char]], move: Move): List[List[Char]] = {
+  def crateMover9001(stacks: List[Stack], move: Move): List[Stack] = {
     val (upper, lower) = stacks(move.from).splitAt(move.amount)
     stacks.updated(move.to, upper ++ stacks(move.to))
       .updated(move.from, lower)
   }
 
   @tailrec
-  def rotate(stack: List[List[Char]], rotated: List[List[Char]] = List()): List[List[Char]] = {
-    if (stack.isEmpty) {
+  def rotate(rows: List[List[Char]], rotated: List[Stack] = List()): List[Stack] = {
+    if (rows.isEmpty) {
       rotated
     } else {
-      val topRow = stack.head
+      val topRow = rows.head
       val newRotated = topRow.zipAll(rotated, List(), List()).map {
         case (' ', a) => a
         case (n: Char, a) => List(n) ++ a
       }
-      rotate(stack.tail, newRotated)
+      rotate(rows.tail, newRotated)
     }
   }
 
@@ -86,7 +87,7 @@ object Day5 extends App {
   }
 
   @tailrec
-  def parseRows(input: List[String], stack: List[List[Char]] = List()): List[List[Char]] = {
+  def parseRows(input: List[String], stack: List[Stack] = List()): List[Stack] = {
     val line = input.head
     if (bottomRegex.matcher(line).matches()) {
       stack

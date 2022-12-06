@@ -17,15 +17,15 @@ object Day4 extends App {
   }
 
   @tailrec
-  def countMatches(input: List[String], matches: Int, predicate: (Range, Range) => Boolean): Int = {
+  def countMatches(input: List[String], predicate: (Range, Range) => Boolean, matches: Int = 0): Int = {
     if (input.isEmpty) {
       matches
     } else {
       val (first, second) = toRanges(input.head)
       if (predicate(second, first) || predicate(first, second)) {
-        countMatches(input.tail, matches + 1, predicate)
+        countMatches(input.tail, predicate, matches + 1)
       } else {
-        countMatches(input.tail, matches, predicate)
+        countMatches(input.tail, predicate, matches)
       }
     }
   }
@@ -34,11 +34,11 @@ object Day4 extends App {
     first.start <= second.start && first.end >= second.end
   }
 
-  println("1. Encompasses: " + countMatches(lines, 0, encompasses))
+  println("1. Encompasses: " + countMatches(lines, encompasses))
 
   def overlaps(first: Range, second: Range): Boolean = {
     first.intersect(second).nonEmpty
   }
 
-  println("2. Overlaps: " + countMatches(lines, 0, overlaps))
+  println("2. Overlaps: " + countMatches(lines, overlaps))
 }

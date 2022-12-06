@@ -18,7 +18,7 @@ object Day3 extends App {
   }
 
   @tailrec
-  def sumPriorities(input: List[String], sum: Int): Int = {
+  def sumPriorities(input: List[String], sum: Int = 0): Int = {
     if (input.isEmpty) {
       sum
     } else {
@@ -31,7 +31,7 @@ object Day3 extends App {
 
   val lines: List[String] = Source.fromResource("day3_1").getLines().toList
 
-  val total: Int = sumPriorities(lines, 0)
+  val total: Int = sumPriorities(lines)
 
   println(s"1. Sum of priorities: $total")
 

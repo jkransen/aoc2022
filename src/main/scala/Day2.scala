@@ -48,7 +48,7 @@ object Day2 extends App {
     Round(theirs, ours)
   }
 
-  val rounds: List[Round] = Source.fromResource("day2_1").getLines().toList.map(lineToRound)
+  val rounds: List[Round] = Source.fromResource("day2_1").getLines().map(lineToRound).toList
 
   val totalScore = rounds.map(_.score).sum
 
@@ -68,7 +68,7 @@ object Day2 extends App {
     Round(theirs, ours)
   }
 
-  val rounds2: List[Round] = Source.fromResource("day2_1").getLines().toList.map(lineToRound2)
+  val rounds2: List[Round] = Source.fromResource("day2_1").getLines().map(lineToRound2).toList
 
   val totalScore2 = rounds2.map(_.score).sum
 

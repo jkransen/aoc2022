@@ -10,7 +10,7 @@ object Day7 extends App {
   val lines: List[String] = Source.fromResource("day7_1").getLines().toList
   val unordered: Map[List[String], Int] = traverse(lines)
 
-  val sizePerPath = sumDirectorySizes(unordered)
+  val sizePerPath: Map[String, Int] = sumDirectorySizes(unordered)
   val smallDirs = sizePerPath.values.filter(_ < 100000)
   val answer1: Int = smallDirs.sum
   println(s"1. Sum of small dirs: ${answer1}")

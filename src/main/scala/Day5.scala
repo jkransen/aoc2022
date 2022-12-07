@@ -9,16 +9,16 @@ object Day5 extends App {
   val bottomRegex = "^[\\d\\s]+$".r.pattern
   val moveRegex = "move (\\d+) from (\\d+) to (\\d+)".r.pattern
 
-  val lines = Source.fromResource("day5_1").getLines().toList
-  val moves = parseMoves(lines)
-  val rows = parseRows(lines)
-  val stacks = rotate(rows)
+  val lines: List[String] = Source.fromResource("day5_1").getLines().toList
+  val moves: List[Move] = parseMoves(lines)
+  val rows: List[List[Char]] = parseRows(lines)
+  val stacks: List[Stack] = rotate(rows)
 
-  val stacksAfterMoves = makeMoves(stacks, moves, crateMover9000)
+  val stacksAfterMoves: List[Stack] = makeMoves(stacks, moves, crateMover9000)
   val cratesOnTop = stacksAfterMoves.flatMap(_.headOption).mkString
   println(s"1. CrateMover 9000: $cratesOnTop")
 
-  val stacksAfterMoves2 = makeMoves(stacks, moves, crateMover9001)
+  val stacksAfterMoves2: List[Stack] = makeMoves(stacks, moves, crateMover9001)
   val cratesOnTop2 = stacksAfterMoves2.flatMap(_.headOption).mkString
   println(s"2. CrateMover 9001: $cratesOnTop2")
 
@@ -87,7 +87,7 @@ object Day5 extends App {
   }
 
   @tailrec
-  def parseRows(input: List[String], stack: List[Stack] = Nil): List[Stack] = {
+  def parseRows(input: List[String], stack: List[List[Char]] = Nil): List[List[Char]] = {
     val line = input.head
     if (bottomRegex.matcher(line).matches()) {
       stack
@@ -95,7 +95,6 @@ object Day5 extends App {
       val row = for {
         i <- 1.to((line.length + 1) / 4)
       } yield line(4 * (i - 1) + 1)
-
       parseRows(input.tail, row.toList :: stack)
     }
   }

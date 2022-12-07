@@ -8,6 +8,22 @@ object Day7 extends App {
   val fileRegex = """^(\d+) (.+)$""".r.pattern
 
   val lines: List[String] = Source.fromResource("day7_1").getLines().toList
+  val unordered: Map[List[String], Int] = traverse(lines)
+
+  val sizePerPath = sumDirectorySizes(unordered)
+  val smallDirs = sizePerPath.values.filter(_ < 100000)
+  val answer1: Int = smallDirs.sum
+  println(s"1. Sum of small dirs: ${answer1}")
+  assert(1915606 == answer1)
+
+  val total = 70000000
+  val used = sizePerPath(root)
+  val free = total - used
+  val toBeFreed = 30000000 - free
+  val bigEnoughDirs = sizePerPath.values.filter(_ > toBeFreed)
+  val answer2: Int = bigEnoughDirs.min
+  println(s"2. Smallest big enough dir: $answer2")
+  assert(5025657 == answer2)
 
   @tailrec
   def traverse(input: List[String], filesByFullPath: Map[List[String], Int] = Map(), currentPath: List[String] = List()): Map[List[String], Int] = {
@@ -19,7 +35,6 @@ object Day7 extends App {
       val fileMatcher = fileRegex.matcher(line)
       if (cdMatcher.matches()) {
         val path = cdMatcher.group(1)
-        println(s"Change path to $path, current path: $currentPath")
         path match {
           case "/" => traverse(input.tail, filesByFullPath, List())
           case ".." => traverse(input.tail, filesByFullPath, currentPath.tail)
@@ -29,7 +44,6 @@ object Day7 extends App {
         val fileName = fileMatcher.group(2)
         val fileSize = fileMatcher.group(1).toInt
         val fullPath = fileName :: currentPath
-        println(s"Add file $fileName with size $fileSize to path /${currentPath.reverse.mkString("/")}")
         traverse(input.tail, filesByFullPath + (fullPath -> fileSize), currentPath)
       } else {
         traverse(input.tail, filesByFullPath, currentPath)
@@ -37,11 +51,8 @@ object Day7 extends App {
     }
   }
 
-  val unordered: Map[List[String], Int] = traverse(lines)
-  println(unordered)
-
   @tailrec
-  def sumSizes(unordered: Map[List[String], Int], sums: Map[String, Int] = Map()): Map[String, Int] = {
+  def sumDirectorySizes(unordered: Map[List[String], Int], sums: Map[String, Int] = Map()): Map[String, Int] = {
     if (unordered.isEmpty) {
       sums
     } else {
@@ -49,7 +60,7 @@ object Day7 extends App {
       path match {
         case filename :: directories => {
           val newSums = addFileSizeToDirs(directories, sums, fileSize)
-          sumSizes(unordered.tail, newSums)
+          sumDirectorySizes(unordered.tail, newSums)
         }
       }
     }
@@ -65,20 +76,4 @@ object Day7 extends App {
       addFileSizeToDirs(directories.tail, sums + (fullPath -> newSum), fileSize)
     }
   }
-
-  val sizePerPath = sumSizes(unordered)
-  val smallDirs: Map[String, Int] = sizePerPath.filter(_._2 < 100000)
-  println(smallDirs)
-  val answer1: Int = smallDirs.values.sum
-  println(s"1. Sum of small dirs: ${answer1}")
-  assert(1915606 == answer1)
-
-  val total = 70000000
-  val used = sizePerPath(root)
-  val free = total - used
-  val toBeFreed = 30000000 - free
-  val bigEnoughDirs = sizePerPath.values.filter(_ > toBeFreed)
-  val answer2: Int = bigEnoughDirs.min
-  println(s"2. Smallest big enough dir: $answer2")
-  assert(5025657 == answer2)
 }

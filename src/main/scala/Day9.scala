@@ -9,38 +9,14 @@ object Day9 extends App {
 
   case class Move(direction: Char, amount: Int)
 
-  case class Head(x: Int = 0, y: Int = 0)
-
-  case class Tail(x: Int = 0, y: Int = 0) {
-    def follow(head: Head): Tail = {
+  case class Knot(x: Int = 0, y: Int = 0) {
+    def follow(head: Knot): Knot = {
       val dx = head.x - x
       val dy = head.y - y
       if (abs(dx) <= 1 && abs(dy) <= 1) {
         this
-      } else if (dx == 2) {
-        if (dy == 0) {
-          this.copy(x = x + 1)
-        } else {
-          this.copy(x = x + 1, y = y + dy)
-        }
-      } else if (dx == -2) {
-        if (dy == 0) {
-          this.copy(x = x - 1)
-        } else {
-          this.copy(x = x - 1, y = y + dy)
-        }
-      } else if (dy == 2) {
-        if (dx == 0) {
-          this.copy(y = y + 1)
-        } else {
-          this.copy(x = x + dx, y = y + 1)
-        }
-      } else { // if (dy == -2)
-        if (dx == 0) {
-          this.copy(y = y - 1)
-        } else {
-          this.copy(x = x + dx, y = y - 1)
-        }
+      } else {
+        this.copy(x = x + dx.signum, y = y + dy.signum)
       }
     }
   }
@@ -48,33 +24,50 @@ object Day9 extends App {
   val moves: List[Move] = scanMoves(lines)
   println("Moves: " + moves)
 
-  val visited = makeMoves(moves)
+  val twoknots = List(Knot(), Knot())
+  val visited = makeMoves(moves, twoknots)
   println(s"1. Number of visited by tail: ${visited.size}")
 
+  val tenknots = 1.to(10).map(_ => Knot()).toList
+  val visited2 = makeMoves(moves, tenknots)
+  println(s"2. Number of visited by tail with 10 knots: ${visited2.size}")
+
   @tailrec
-  def makeMoves(moves: List[Move], head: Head = Head(), tail: Tail = Tail(), visited: Set[Tail] = Set()): Set[Tail] = {
+  def makeMoves(moves: List[Move], knots: List[Knot], visited: Set[Knot] = Set()): Set[Knot] = {
     if (moves.isEmpty) {
       visited
     } else {
       val move = moves.head
-      val (newHead, newTail, newVisited) = makeMove(head, tail, move, visited)
-      makeMoves(moves.tail, newHead, newTail, newVisited)
+      val (newKnots, newVisited) = makeMove(knots, move, visited)
+      makeMoves(moves.tail, newKnots, newVisited)
     }
   }
 
   @tailrec
-  def makeMove(head: Head, tail: Tail, move: Move, visited: Set[Tail]): (Head, Tail, Set[Tail]) = {
+  def makeMove(knots: List[Knot], move: Move, visited: Set[Knot]): (List[Knot], Set[Knot]) = {
     if (move.amount == 0) {
-      (head, tail, visited)
+      (knots, visited)
     } else {
+      val head = knots.head
       val newHead = move.direction match {
         case 'U' => head.copy(y = head.y - 1)
         case 'D' => head.copy(y = head.y + 1)
         case 'L' => head.copy(x = head.x - 1)
         case 'R' => head.copy(x = head.x + 1)
       }
-      val newTail = tail.follow(newHead)
-      makeMove(newHead, newTail, move.copy(amount = move.amount - 1), visited + newTail)
+      val newKnots = newHead :: follow(knots.tail, newHead)
+      val newVisited = visited + newKnots.last
+      makeMove(newKnots, move.copy(amount = move.amount - 1), newVisited)
+    }
+  }
+
+  @tailrec
+  def follow(knots: List[Knot], head: Knot, aggregate: List[Knot] = List()): List[Knot] = {
+    if (knots.isEmpty) {
+      aggregate
+    } else {
+      val newHead = knots.head.follow(head)
+      follow(knots.tail, newHead, aggregate :+ newHead)
     }
   }
 
@@ -94,4 +87,5 @@ object Day9 extends App {
   }
 
   assert(visited.size == 6269)
+  assert(visited2.size == 2557)
 }

@@ -1,12 +1,13 @@
 import scala.annotation.tailrec
 import scala.io.Source
+import scala.math.abs
 
 object Day10 extends App {
 
   val noopRegex = "noop".r.regex
   val addxRegex = "addx (-?\\d+)".r.pattern
 
-  val lines: List[String] = Source.fromResource("day10_2").getLines().toList
+  val lines: List[String] = Source.fromResource("day10_1").getLines().toList
   val sampleInterval = 40
   val sampleClocks = 0.to(5).map(20 + _ * sampleInterval).toList
   println(sampleClocks.mkString(","))
@@ -19,13 +20,10 @@ object Day10 extends App {
     state => {
       val currentClocks = 1.to(duration).map(state.time + _).toList
       currentClocks.foldLeft(state)( (state, clock) => {
-        val (newCollectedSamples, remainingSampleClocks) = if (state.sampleClocks.contains(clock)) {
-          val newSample = clock * state.x
-          println(s"new sample $newSample at clock $clock and x ${state.x}")
-          (state.collectedSamples :+ newSample, state.sampleClocks.filter(_ != clock))
-        } else {
-          (state.collectedSamples, state.sampleClocks)
-        }
+        val isSample = state.sampleClocks.contains(clock)
+        val newCollectedSamples = if (isSample) state.collectedSamples :+ (clock * state.x) else { state.collectedSamples }
+        val remainingSampleClocks = if (isSample) sampleClocks.filter(_ != clock) else sampleClocks
+        writeCrt(clock, state.x)
         val nextX = if (clock == currentClocks.max) changeX(state.x) else state.x
         State(remainingSampleClocks, nextX, newCollectedSamples, clock)
       })
@@ -43,16 +41,16 @@ object Day10 extends App {
   println(s"1. Sum of samples: ${samples.sum}")
 
   @tailrec
-  def collectSamples(operations: List[Execution], previousState: State): List[Int] = {
+  def collectSamples(operations: List[Execution], state: State): List[Int] = {
     if (operations.isEmpty) {
-      previousState.collectedSamples
+      state.collectedSamples
     } else {
       val execution = operations.head
-      val state = execution(previousState)
-      if (state.sampleClocks.isEmpty) {
+      val nextState = execution(state)
+      if (nextState.sampleClocks.isEmpty) {
         state.collectedSamples
       } else {
-        collectSamples(operations.tail, state)
+        collectSamples(operations.tail, nextState)
       }
     }
   }
@@ -75,6 +73,11 @@ object Day10 extends App {
     }
   }
 
-  assert(13140 == samples.sum)
+//  assert(13140 == samples.sum)
 //  assert(12520 == samples.sum)
+
+  def writeCrt(clock: Int, x: Int): Unit = {
+    if (abs((clock % 40) - x - 1) < 2) print('#') else print('.')
+    if (clock % 40 == 0) println()
+  }
 }

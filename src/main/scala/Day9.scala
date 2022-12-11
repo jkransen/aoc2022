@@ -10,9 +10,16 @@ object Day9 extends App {
   case class Move(direction: Char, amount: Int)
 
   case class Knot(x: Int = 0, y: Int = 0) {
-    def follow(head: Knot): Knot = {
-      val dx = head.x - x
-      val dy = head.y - y
+    def move(direction: Char): Knot = direction match {
+      case 'U' => this.copy(y = y - 1)
+      case 'D' => this.copy(y = y + 1)
+      case 'L' => this.copy(x = x - 1)
+      case 'R' => this.copy(x = x + 1)
+      case _ => this
+    }
+    def follow(prev: Knot): Knot = {
+      val dx = prev.x - x
+      val dy = prev.y - y
       if (abs(dx) <= 1 && abs(dy) <= 1) {
         this
       } else {
@@ -48,13 +55,7 @@ object Day9 extends App {
     if (move.amount == 0) {
       (knots, visited)
     } else {
-      val head = knots.head
-      val newHead = move.direction match {
-        case 'U' => head.copy(y = head.y - 1)
-        case 'D' => head.copy(y = head.y + 1)
-        case 'L' => head.copy(x = head.x - 1)
-        case 'R' => head.copy(x = head.x + 1)
-      }
+      val newHead = knots.head.move(move.direction)
       val newKnots = newHead :: follow(knots.tail, newHead)
       val newVisited = visited + newKnots.last
       makeMove(newKnots, move.copy(amount = move.amount - 1), newVisited)

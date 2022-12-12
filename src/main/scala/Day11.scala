@@ -4,21 +4,18 @@ import scala.io.Source
 
 object Day11 extends App {
 
+  case class Monkey(name: Int, items: List[Int], operation: Int => Int, divisibleBy: Int => Boolean, monkeyTrue: Int, monkeyFalse: Int, inspected: Int = 0) {
+    override val toString: String = s"Monkey $name: $items, true=>$monkeyTrue, false=>$monkeyFalse, inspected: $inspected"
+  }
+
+  val text = Source.fromResource("day11_1").mkString
   val monkeyRegex = """Monkey (\d+):\s*Starting items: ([ ,\w]+)\s*Operation: new = ([ +*\w]+)\s*Test: divisible by (\d+)\s*If true: throw to monkey (\d+)\s*If false: throw to monkey (\d+)""".r.pattern
-
-  val text = Source.fromResource("day11_1").mkString.replace('\n', ' ')
-  println(text)
-
-  case class Monkey(name: Int, items: List[Int], operation: Int => Int, divisibleBy: Int => Boolean, monkeyTrue: Int, monkeyFalse: Int, inspected: Int = 0)
-
-  private val matcher = monkeyRegex.matcher(text)
-
+  val matcher = monkeyRegex.matcher(text)
   val monkeys = scanMonkeys(matcher)
 
   monkeys.foreach(println)
 
   val result = run(monkeys)
-
   println(result)
 
   @tailrec
@@ -29,7 +26,7 @@ object Day11 extends App {
         .sortWith((one, two) => one > two)
         .take(2).product
     } else {
-      println("round" + remaining)
+      println("Rounds to go: " + remaining)
       run(doRound(monkeys), remaining - 1)
     }
   }
@@ -48,11 +45,7 @@ object Day11 extends App {
     } else {
       val item = monkey.items.head
       val value = monkey.operation(item) / 3
-      val target = if (monkey.divisibleBy(value)) {
-        monkey.monkeyTrue
-      } else {
-        monkey.monkeyFalse
-      }
+      val target = if (monkey.divisibleBy(value)) monkey.monkeyTrue else monkey.monkeyFalse
       val targetMonkey = monkeys(target)
       val newTargetMonkey = targetMonkey.copy(items = targetMonkey.items :+ value)
       val newMonkey = monkey.copy(items = monkey.items.tail, inspected = monkey.inspected + 1)
@@ -85,13 +78,14 @@ object Day11 extends App {
   }
 
   def divisibleBy(by: Int)(in: Int): Boolean = {
-    return in % by == 0
+    in % by == 0
   }
 
   assert(81 == operation("old * old")(9))
   assert(18 == operation("old + old")(9))
 
   assert(divisibleBy(9)(81))
+  assert(!divisibleBy(10)(81))
 
-  // 56168 is too high
+  assert(result < 56168, "too high")
 }
